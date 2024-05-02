@@ -14,6 +14,9 @@ import {
 
 import PhotographyGraphic from "./PhotographyGraphic";
 
+import Telephoto from "./assets/100-400.png";
+import Fisheye from "./assets/fishey.png";
+
 const CIRCLES_OF_CONFUSION = {
   Webcam: 0.002,
   Smartphone: 0.002,
@@ -105,7 +108,7 @@ function App() {
 
   return (
     <>
-      <Box p={4} pt={6}>
+      <Box p={2} pt={6}>
         <PhotographyGraphic
           distanceToSubjectInInches={distanceToSubjectInInches}
           nearFocalPointInInches={nearFocalPointInInches}
@@ -114,7 +117,7 @@ function App() {
         />
       </Box>
 
-      <Box p={4} pt={6}>
+      <Box pt={6}>
         <Flex gap={2}>
           <Box w="20%">
             <Text align="right">Subject Distance (ft)</Text>
@@ -145,7 +148,7 @@ function App() {
         </Flex>
       </Box>
 
-      <Box p={4} pt={6}>
+      <Box pt={6}>
         <Flex gap={2}>
           <Box w="20%">
             <Text align="right">Focal Length (mm)</Text>
@@ -171,9 +174,18 @@ function App() {
             </Slider>
           </Box>
         </Flex>
+        <Flex gap={2} mt={2}>
+          <Box w="20%"></Box>
+          <Box flexGrow={1}>
+            <Flex justify="space-between">
+              <img src={Fisheye} alt="Fishey lens" style={{ height: 50 }} />
+              <img src={Telephoto} alt="100-400 lens" style={{ height: 50 }} />
+            </Flex>
+          </Box>
+        </Flex>
       </Box>
 
-      <Box p={4} pt={6}>
+      <Box pt={6}>
         <Flex gap={2}>
           <Box w="20%">
             <Text align="right">Aperture</Text>
@@ -201,7 +213,7 @@ function App() {
         </Flex>
       </Box>
 
-      <Box p={4} pt={6}>
+      <Box pt={6}>
         <Flex gap={2}>
           <Box w="20%">
             <Text align="right">Sensor Size</Text>
