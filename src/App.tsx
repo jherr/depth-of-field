@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 
 import PhotographyGraphic from "./PhotographyGraphic";
+import { SmallDog, MediumDog, LargeDog, Human } from "./PhotographyGraphic";
 
 import Telephoto from "./assets/100-400.png";
 import Fisheye from "./assets/fishey.png";
@@ -50,13 +51,41 @@ const COMMON_SETUPS = [
     idealDistance: 72,
   },
   {
-    name: "Full Frame 50mm",
+    name: "FF - 28mm",
+    focalLength: 28,
+    aperture: 1.4,
+    circleOfConfusion: 0.029,
+    idealDistance: 48,
+  },
+  {
+    name: "FF - 35mm",
+    focalLength: 35,
+    aperture: 1.4,
+    circleOfConfusion: 0.029,
+    idealDistance: 60,
+  },
+  {
+    name: "FF - 50mm",
     focalLength: 50,
     aperture: 1.8,
     circleOfConfusion: 0.029,
     idealDistance: 72,
   },
+  {
+    name: "FF - 70mm",
+    focalLength: 70,
+    aperture: 2.8,
+    circleOfConfusion: 0.029,
+    idealDistance: 96,
+  },
 ];
+
+const SUBJECTS: Record<string, () => ReturnType<typeof SmallDog>> = {
+  "Small Dog": SmallDog,
+  "Medium Dog": MediumDog,
+  "Large Dog": LargeDog,
+  Human: Human,
+};
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -69,6 +98,7 @@ function App() {
   const [aperture, setAperture] = useState(1.8);
   const [circleOfConfusionInMillimeters, setCircleOfConfusionInMillimeters] =
     useState(0.029);
+  const [subject, setSubject] = useState("Human");
 
   const distanceToSubjectInMM = distanceToSubjectInInches * 25.4;
 
@@ -114,144 +144,174 @@ function App() {
           nearFocalPointInInches={nearFocalPointInInches}
           farFocalPointInInches={farFocalPointInInches}
           farDistanceInInches={farDistanceInInches}
+          SubjectGraphic={SUBJECTS[subject]}
+          focalLength={focalLengthInMillimeters}
+          aperture={aperture}
         />
       </Box>
 
-      <Box pt={6}>
-        <Flex gap={2}>
-          <Box w="20%">
-            <Text align="right">Subject Distance (ft)</Text>
-          </Box>
-          <Box flexGrow={1}>
-            <Slider
-              aria-label="distance to subject"
-              value={distanceToSubjectInInches}
-              onChange={(val: number) => setDistanceToSubjectInInches(val)}
-              min={10}
-              max={400}
-              step={1}
-            >
-              {new Array(Math.floor(farDistanceInInches / 24) + 1)
-                .fill(0)
-                .map((_v, i) => (i + 1) * 24)
-                .map((val) => (
+      <Box px={6}>
+        <Box pt={6}>
+          <Flex gap={2}>
+            <Box w="20%">
+              <Text align="right">Subject Distance (ft)</Text>
+            </Box>
+            <Box flexGrow={1}>
+              <Slider
+                aria-label="distance to subject"
+                value={distanceToSubjectInInches}
+                onChange={(val: number) => setDistanceToSubjectInInches(val)}
+                min={10}
+                max={400}
+                step={1}
+              >
+                {new Array(Math.floor(farDistanceInInches / 24) + 1)
+                  .fill(0)
+                  .map((_v, i) => (i + 1) * 24)
+                  .map((val) => (
+                    <SliderMark key={val} value={val} {...labelStyles}>
+                      {val / 12}
+                    </SliderMark>
+                  ))}
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            </Box>
+          </Flex>
+        </Box>
+
+        <Box pt={6}>
+          <Flex gap={2}>
+            <Box w="20%">
+              <Text align="right">Focal Length (mm)</Text>
+            </Box>
+            <Box flexGrow={1}>
+              <Slider
+                aria-label="focal length"
+                value={focalLengthInMillimeters}
+                onChange={(val: number) => setFocalLengthInMillimeters(val)}
+                min={3}
+                max={400}
+                step={1}
+              >
+                {[14, 28, 35, 50, 70, 85, 100, 135, 155, 200].map((val) => (
                   <SliderMark key={val} value={val} {...labelStyles}>
-                    {val / 12}
+                    {val}
                   </SliderMark>
                 ))}
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
-          </Box>
-        </Flex>
-      </Box>
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            </Box>
+          </Flex>
+          <Flex gap={2} mt={2}>
+            <Box w="20%"></Box>
+            <Box flexGrow={1}>
+              <Flex justify="space-between">
+                <img src={Fisheye} alt="Fishey lens" style={{ height: 50 }} />
+                <img
+                  src={Telephoto}
+                  alt="100-400 lens"
+                  style={{ height: 50 }}
+                />
+              </Flex>
+            </Box>
+          </Flex>
+        </Box>
 
-      <Box pt={6}>
-        <Flex gap={2}>
-          <Box w="20%">
-            <Text align="right">Focal Length (mm)</Text>
-          </Box>
-          <Box flexGrow={1}>
-            <Slider
-              aria-label="focal length"
-              value={focalLengthInMillimeters}
-              onChange={(val: number) => setFocalLengthInMillimeters(val)}
-              min={3}
-              max={400}
-              step={1}
-            >
-              {[14, 28, 35, 50, 70, 85, 100, 135, 155, 200].map((val) => (
-                <SliderMark key={val} value={val} {...labelStyles}>
-                  {val}
-                </SliderMark>
-              ))}
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
-          </Box>
-        </Flex>
-        <Flex gap={2} mt={2}>
-          <Box w="20%"></Box>
-          <Box flexGrow={1}>
-            <Flex justify="space-between">
-              <img src={Fisheye} alt="Fishey lens" style={{ height: 50 }} />
-              <img src={Telephoto} alt="100-400 lens" style={{ height: 50 }} />
+        <Box pt={6}>
+          <Flex gap={2}>
+            <Box w="20%">
+              <Text align="right">Aperture</Text>
+            </Box>
+            <Box flexGrow={1}>
+              <Slider
+                aria-label="aperture"
+                value={aperture}
+                onChange={(val: number) => setAperture(val)}
+                min={0.8}
+                max={22}
+                step={0.1}
+              >
+                {[0.8, 1.4, 1.8, 2.8, 4, 5.6, 8, 11, 16, 22].map((val) => (
+                  <SliderMark key={val} value={val} {...labelStyles}>
+                    {val}
+                  </SliderMark>
+                ))}
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            </Box>
+          </Flex>
+        </Box>
+
+        <Box pt={6}>
+          <Flex gap={2}>
+            <Flex gap={2} width="50%">
+              <Box w="20%" mt={2}>
+                <Text align="right">Sensor Size</Text>
+              </Box>
+              <Box flexGrow={1}>
+                <Select
+                  value={circleOfConfusionInMillimeters}
+                  placeholder="Sensor Size"
+                  onChange={(evt) =>
+                    setCircleOfConfusionInMillimeters(+evt?.target?.value)
+                  }
+                >
+                  {Object.entries(CIRCLES_OF_CONFUSION).map(([key, val]) => (
+                    <option key={key} value={val}>
+                      {key}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
             </Flex>
-          </Box>
-        </Flex>
-      </Box>
 
-      <Box pt={6}>
-        <Flex gap={2}>
-          <Box w="20%">
-            <Text align="right">Aperture</Text>
-          </Box>
-          <Box flexGrow={1}>
-            <Slider
-              aria-label="aperture"
-              value={aperture}
-              onChange={(val: number) => setAperture(val)}
-              min={0.8}
-              max={22}
-              step={0.1}
-            >
-              {[0.8, 1.4, 1.8, 2.8, 4, 5.6, 8, 11, 16, 22].map((val) => (
-                <SliderMark key={val} value={val} {...labelStyles}>
-                  {val}
-                </SliderMark>
-              ))}
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb />
-            </Slider>
-          </Box>
-        </Flex>
-      </Box>
+            <Flex gap={2} width="50%">
+              <Box w="20%" mt={2}>
+                <Text align="right">Subject</Text>
+              </Box>
+              <Box flexGrow={1}>
+                <Select
+                  value={subject}
+                  placeholder="Subject"
+                  onChange={(evt) => setSubject(evt?.target?.value)}
+                >
+                  {Object.entries(SUBJECTS).map(([key]) => (
+                    <option key={key} value={key}>
+                      {key}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+            </Flex>
+          </Flex>
+        </Box>
 
-      <Box pt={6}>
-        <Flex gap={2}>
-          <Box w="20%">
-            <Text align="right">Sensor Size</Text>
-          </Box>
-          <Box flexGrow={1}>
-            <Select
-              value={circleOfConfusionInMillimeters}
-              placeholder="Select a Sensor Size"
-              onChange={(evt) =>
-                setCircleOfConfusionInMillimeters(+evt?.target?.value)
-              }
-            >
-              {Object.entries(CIRCLES_OF_CONFUSION).map(([key, val]) => (
-                <option key={key} value={val}>
-                  {key}
-                </option>
-              ))}
-            </Select>
-          </Box>
-        </Flex>
-      </Box>
-
-      <Box p={4} pt={6}>
-        <Flex gap={5} justify="center">
-          {COMMON_SETUPS.map((setup) => (
-            <Button
-              key={setup.name}
-              onClick={() => {
-                setFocalLengthInMillimeters(setup.focalLength);
-                setAperture(setup.aperture);
-                setCircleOfConfusionInMillimeters(setup.circleOfConfusion);
-                setDistanceToSubjectInInches(setup.idealDistance);
-              }}
-            >
-              {setup.name}
-            </Button>
-          ))}
-        </Flex>
+        <Box p={4} pt={6}>
+          <Flex gap={5} justify="center">
+            {COMMON_SETUPS.map((setup) => (
+              <Button
+                key={setup.name}
+                onClick={() => {
+                  setFocalLengthInMillimeters(setup.focalLength);
+                  setAperture(setup.aperture);
+                  setCircleOfConfusionInMillimeters(setup.circleOfConfusion);
+                  setDistanceToSubjectInInches(setup.idealDistance);
+                }}
+              >
+                {setup.name}
+              </Button>
+            ))}
+          </Flex>
+        </Box>
       </Box>
     </>
   );
