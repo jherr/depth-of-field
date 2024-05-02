@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Slider,
   SliderTrack,
@@ -10,6 +10,9 @@ import {
   Text,
   Select,
   Button,
+  Radio,
+  Stack,
+  RadioGroup,
 } from "@chakra-ui/react";
 
 import PhotographyGraphic from "./PhotographyGraphic";
@@ -146,6 +149,30 @@ function App() {
     fontSize: "sm",
   };
 
+  const distanceMarks = useMemo(() => {
+    if (system === "Imperial") {
+      return new Array(Math.floor(farDistanceInInches / 24) + 1)
+        .fill(0)
+        .map((_v, i) => (i + 1) * 24)
+        .map((val) => ({
+          value: val,
+          label: `${val / 12}'`,
+        }));
+    } else {
+      const farDistanceInMeters = farDistanceInInches * 0.0254;
+      function convertMetersToInches(meters: number) {
+        return meters * 39.3701;
+      }
+      return new Array(Math.floor(farDistanceInMeters) + 1)
+        .fill(0)
+        .map((_val, val) => ({
+          value: convertMetersToInches(val + 1),
+          label: `${val + 1}m`,
+        }));
+      return [];
+    }
+  }, [system, farDistanceInInches]);
+
   return (
     <>
       <Box p={2} pt={6}>
@@ -165,7 +192,32 @@ function App() {
         <Box pt={6}>
           <Flex gap={2}>
             <Box w="20%">
-              <Text align="right">Subject Distance (ft)</Text>
+              <Text align="right">Units</Text>
+            </Box>
+
+            <Box flexGrow={1}>
+              <RadioGroup
+                onChange={(v) => setSystem(v as "Imperial" | "Metric")}
+                value={system}
+              >
+                <Stack direction="row">
+                  {SYSTEMS.map((system) => (
+                    <Radio value={system} key={system}>
+                      {system}
+                    </Radio>
+                  ))}
+                </Stack>
+              </RadioGroup>
+            </Box>
+          </Flex>
+        </Box>
+
+        <Box pt={6}>
+          <Flex gap={2}>
+            <Box w="20%">
+              <Text align="right">
+                Subject Distance ({system === "Imperial" ? "ft" : "m"})
+              </Text>
             </Box>
             <Box flexGrow={1}>
               <Slider
@@ -176,14 +228,11 @@ function App() {
                 max={400}
                 step={1}
               >
-                {new Array(Math.floor(farDistanceInInches / 24) + 1)
-                  .fill(0)
-                  .map((_v, i) => (i + 1) * 24)
-                  .map((val) => (
-                    <SliderMark key={val} value={val} {...labelStyles}>
-                      {val / 12}
-                    </SliderMark>
-                  ))}
+                {distanceMarks.map(({ label, value }) => (
+                  <SliderMark key={value} value={value} {...labelStyles}>
+                    {label}
+                  </SliderMark>
+                ))}
                 <SliderTrack>
                   <SliderFilledTrack />
                 </SliderTrack>
@@ -319,21 +368,6 @@ function App() {
                 }}
               >
                 {setup.name}
-              </Button>
-            ))}
-          </Flex>
-        </Box>
-
-        <Box p={4} pt={6}>
-          <Flex gap={5} justify="center">
-            {SYSTEMS.map((system) => (
-              <Button
-                key={system}
-                onClick={() => {
-                  setSystem(system);
-                }}
-              >
-                {system}
               </Button>
             ))}
           </Flex>
