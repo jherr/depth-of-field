@@ -94,6 +94,8 @@ const SUBJECTS: Record<string, () => ReturnType<typeof SmallDog>> = {
   "Human At Desk": HumanAtDesk,
 };
 
+const SYSTEMS = ["Metric", "Imperial"] as const;
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
@@ -106,6 +108,7 @@ function App() {
   const [circleOfConfusionInMillimeters, setCircleOfConfusionInMillimeters] =
     useState(0.029);
   const [subject, setSubject] = useState("Human");
+  const [system, setSystem] = useState<(typeof SYSTEMS)[number]>("Imperial");
 
   const distanceToSubjectInMM = distanceToSubjectInInches * 25.4;
 
@@ -154,6 +157,7 @@ function App() {
           SubjectGraphic={SUBJECTS[subject]}
           focalLength={focalLengthInMillimeters}
           aperture={aperture}
+          system={system}
         />
       </Box>
 
@@ -315,6 +319,21 @@ function App() {
                 }}
               >
                 {setup.name}
+              </Button>
+            ))}
+          </Flex>
+        </Box>
+
+        <Box p={4} pt={6}>
+          <Flex gap={5} justify="center">
+            {SYSTEMS.map((system) => (
+              <Button
+                key={system}
+                onClick={() => {
+                  setSystem(system);
+                }}
+              >
+                {system}
               </Button>
             ))}
           </Flex>

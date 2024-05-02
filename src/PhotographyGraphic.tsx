@@ -1,8 +1,4 @@
-function imperial(inches: number, precision = 1) {
-  const feet = Math.floor(inches / 12);
-  const remainingInches = inches % 12;
-  return `${feet}' ${remainingInches.toFixed(precision)}"`;
-}
+import { toImperial, toMetric } from "./utils/units";
 
 export const SmallDog = () => (
   <path
@@ -52,6 +48,7 @@ export default function PhotographyGraphic({
   SubjectGraphic = Human,
   focalLength,
   aperture,
+  system,
 }: {
   distanceToSubjectInInches: number;
   nearFocalPointInInches: number;
@@ -59,8 +56,11 @@ export default function PhotographyGraphic({
   farDistanceInInches: number;
   focalLength: number;
   aperture: number;
+  system: string;
   SubjectGraphic?: () => JSX.Element;
 }) {
+  const covertUnits = system === "Imperial" ? toImperial : toMetric;
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -125,7 +125,7 @@ export default function PhotographyGraphic({
         fontSize={3}
         textAnchor="middle"
       >
-        {imperial(farFocalPointInInches - nearFocalPointInInches)}
+        {covertUnits(farFocalPointInInches - nearFocalPointInInches)}
       </text>
 
       <text x={1} y={12} fontSize={4} fontWeight="bold">
@@ -141,14 +141,14 @@ export default function PhotographyGraphic({
               nearFocalPointInInches - 0.5
             } 71) rotate(-90)`}
           >
-            {imperial(nearFocalPointInInches, 0)}
+            {covertUnits(nearFocalPointInInches, 0)}
           </text>
           <text
             fontSize={3}
             textAnchor="start"
             transform={`translate(${farFocalPointInInches + 0.5} 1) rotate(90)`}
           >
-            {imperial(farFocalPointInInches, 0)}
+            {covertUnits(farFocalPointInInches, 0)}
           </text>
         </>
       )}
@@ -158,7 +158,7 @@ export default function PhotographyGraphic({
         fontSize={3}
         textAnchor="middle"
       >
-        {imperial(distanceToSubjectInInches, 0)}
+        {covertUnits(distanceToSubjectInInches, 0)}
       </text>
 
       <g transform={`translate(${distanceToSubjectInInches})`}>
