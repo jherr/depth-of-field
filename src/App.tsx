@@ -13,7 +13,13 @@ import {
 } from "@chakra-ui/react";
 
 import PhotographyGraphic from "./PhotographyGraphic";
-import { SmallDog, MediumDog, LargeDog, Human } from "./PhotographyGraphic";
+import {
+  SmallDog,
+  MediumDog,
+  LargeDog,
+  Human,
+  HumanAtDesk,
+} from "./PhotographyGraphic";
 
 import Telephoto from "./assets/100-400.png";
 import Fisheye from "./assets/fishey.png";
@@ -85,6 +91,7 @@ const SUBJECTS: Record<string, () => ReturnType<typeof SmallDog>> = {
   "Medium Dog": MediumDog,
   "Large Dog": LargeDog,
   Human: Human,
+  "Human At Desk": HumanAtDesk,
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -310,6 +317,14 @@ function App() {
                 {setup.name}
               </Button>
             ))}
+          </Flex>
+        </Box>
+
+        <Box p={4} pt={6}>
+          <Flex gap={5} justify="center">
+            <a href="https://github.com/jherr/depth-of-field" target="_blank">
+              Contribute to this open source project on Github.
+            </a>
           </Flex>
         </Box>
       </Box>
