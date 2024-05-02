@@ -123,14 +123,14 @@ function App() {
             <Slider
               aria-label="distance to subject"
               value={distanceToSubjectInInches}
-              onChange={(val) => setDistanceToSubjectInInches(val)}
+              onChange={(val: number) => setDistanceToSubjectInInches(val)}
               min={10}
               max={400}
               step={1}
             >
               {new Array(Math.floor(farDistanceInInches / 24) + 1)
                 .fill(0)
-                .map((v, i) => (i + 1) * 24)
+                .map((_v, i) => (i + 1) * 24)
                 .map((val) => (
                   <SliderMark key={val} value={val} {...labelStyles}>
                     {val / 12}
@@ -154,7 +154,7 @@ function App() {
             <Slider
               aria-label="focal length"
               value={focalLengthInMillimeters}
-              onChange={(val) => setFocalLengthInMillimeters(val)}
+              onChange={(val: number) => setFocalLengthInMillimeters(val)}
               min={10}
               max={400}
               step={1}
@@ -182,7 +182,7 @@ function App() {
             <Slider
               aria-label="aperture"
               value={aperture}
-              onChange={(val) => setAperture(val)}
+              onChange={(val: number) => setAperture(val)}
               min={0.8}
               max={22}
               step={0.1}
@@ -210,8 +210,8 @@ function App() {
             <Select
               value={circleOfConfusionInMillimeters}
               placeholder="Select a Sensor Size"
-              onChange={(v) =>
-                setCircleOfConfusionInMillimeters(+v.target.value)
+              onChange={(evt) =>
+                setCircleOfConfusionInMillimeters(+evt?.target?.value)
               }
             >
               {Object.entries(CIRCLES_OF_CONFUSION).map(([key, val]) => (
