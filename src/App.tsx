@@ -158,7 +158,7 @@ function App() {
               aria-label="focal length"
               value={focalLengthInMillimeters}
               onChange={(val: number) => setFocalLengthInMillimeters(val)}
-              min={10}
+              min={3}
               max={400}
               step={1}
             >
