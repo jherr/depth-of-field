@@ -84,7 +84,8 @@ export default function PhotographyGraphic({
       const cursorpt = pt.matrixTransform(
         svgRef.current!.getScreenCTM()!.inverse()
       );
-      onChangeDistance?.(cursorpt.x);
+      const x = Math.max(5, Math.min(farDistanceInInches, cursorpt.x));
+      onChangeDistance?.(x);
     }
   }
 
