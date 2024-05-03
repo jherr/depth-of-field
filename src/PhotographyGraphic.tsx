@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { toImperial, toMetric } from "./utils/units";
 
 export const SmallDog = () => (
@@ -50,6 +51,7 @@ export default function PhotographyGraphic({
   aperture,
   system,
   verticalFieldOfView,
+  onChangeDistance,
 }: {
   distanceToSubjectInInches: number;
   nearFocalPointInInches: number;
@@ -60,11 +62,38 @@ export default function PhotographyGraphic({
   system: string;
   verticalFieldOfView: number;
   SubjectGraphic?: () => JSX.Element;
+  onChangeDistance?: (distance: number) => void;
 }) {
-  const covertUnits = system === "Imperial" ? toImperial : toMetric;
+  const convertUnits = system === "Imperial" ? toImperial : toMetric;
+
+  const svgRef = useRef<SVGSVGElement>(null);
+  const mouseDownRef = useRef(false);
+  function onMouseDown() {
+    mouseDownRef.current = true;
+  }
+  function onMouseUp() {
+    mouseDownRef.current = false;
+  }
+  function onMouseMove(evt: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    if (mouseDownRef.current) {
+      const pt = svgRef.current!.createSVGPoint(); // Created once for document
+
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+
+      const cursorpt = pt.matrixTransform(
+        svgRef.current!.getScreenCTM()!.inverse()
+      );
+      onChangeDistance?.(cursorpt.x);
+    }
+  }
 
   return (
     <svg
+      ref={svgRef}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseMove={onMouseMove}
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`-43.5 0 ${farDistanceInInches} 84`}
       style={{ width: "100%", height: "auto" }}
@@ -150,7 +179,7 @@ export default function PhotographyGraphic({
         fontSize={3}
         textAnchor="middle"
       >
-        {covertUnits(farFocalPointInInches - nearFocalPointInInches)}
+        {convertUnits(farFocalPointInInches - nearFocalPointInInches)}
       </text>
 
       <text x={-1} y={5} fontSize={4} fontWeight="bold" textAnchor="end">
@@ -166,14 +195,14 @@ export default function PhotographyGraphic({
               nearFocalPointInInches - 0.5
             } 71) rotate(-90)`}
           >
-            {covertUnits(nearFocalPointInInches, 0)}
+            {convertUnits(nearFocalPointInInches, 0)}
           </text>
           <text
             fontSize={3}
             textAnchor="start"
             transform={`translate(${farFocalPointInInches + 0.5} 1) rotate(90)`}
           >
-            {covertUnits(farFocalPointInInches, 0)}
+            {convertUnits(farFocalPointInInches, 0)}
           </text>
         </>
       )}
@@ -183,7 +212,7 @@ export default function PhotographyGraphic({
         fontSize={3}
         textAnchor="middle"
       >
-        {covertUnits(distanceToSubjectInInches, 0)}
+        {convertUnits(distanceToSubjectInInches, 0)}
       </text>
 
       <g transform={`translate(${distanceToSubjectInInches})`}>

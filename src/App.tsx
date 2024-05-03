@@ -217,6 +217,7 @@ function App() {
           aperture={aperture}
           system={system}
           verticalFieldOfView={verticalFieldOfView}
+          onChangeDistance={(val) => setDistanceToSubjectInInches(val)}
         />
       </Box>
 
