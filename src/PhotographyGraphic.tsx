@@ -49,6 +49,7 @@ export default function PhotographyGraphic({
   focalLength,
   aperture,
   system,
+  verticalFieldOfView,
 }: {
   distanceToSubjectInInches: number;
   nearFocalPointInInches: number;
@@ -57,6 +58,7 @@ export default function PhotographyGraphic({
   focalLength: number;
   aperture: number;
   system: string;
+  verticalFieldOfView: number;
   SubjectGraphic?: () => JSX.Element;
 }) {
   const covertUnits = system === "Imperial" ? toImperial : toMetric;
@@ -75,6 +77,9 @@ export default function PhotographyGraphic({
   }      
 `}
         </style>
+        <clipPath id="forward">
+          <rect x="0" y="0" width={farDistanceInInches} height={72} />
+        </clipPath>
       </defs>
       <rect
         x={0}
@@ -91,6 +96,26 @@ export default function PhotographyGraphic({
       />
 
       <line x1={0} y1={0} x2={0} y2={72} stroke="#aaa" strokeWidth={0.2} />
+      <g clipPath="url(#forward)">
+        <line
+          x1={0}
+          y1={0}
+          x2={farDistanceInInches}
+          y2={0}
+          stroke="#faa"
+          strokeWidth={0.5}
+          transform={`translate(0 14.3) rotate(${verticalFieldOfView / 2})`}
+        />
+        <line
+          x1={0}
+          y1={0}
+          x2={farDistanceInInches}
+          y2={0}
+          stroke="#faa"
+          strokeWidth={0.5}
+          transform={`translate(0 14.3) rotate(${-verticalFieldOfView / 2})`}
+        />
+      </g>
 
       <line
         x1={nearFocalPointInInches}
@@ -128,7 +153,7 @@ export default function PhotographyGraphic({
         {covertUnits(farFocalPointInInches - nearFocalPointInInches)}
       </text>
 
-      <text x={1} y={12} fontSize={4} fontWeight="bold">
+      <text x={-1} y={5} fontSize={4} fontWeight="bold" textAnchor="end">
         {focalLength}mm f/{aperture}
       </text>
 

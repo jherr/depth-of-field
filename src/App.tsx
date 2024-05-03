@@ -27,65 +27,90 @@ import {
 import Telephoto from "./assets/100-400.png";
 import Fisheye from "./assets/fishey.png";
 
-const CIRCLES_OF_CONFUSION = {
-  Webcam: 0.002,
-  Smartphone: 0.002,
-  "35mm (full frame)": 0.029,
-  "APS-C": 0.019,
-  "Micro Four Thirds": 0.015,
-  "Medium Format": 0.043,
-  "Large Format": 0.1,
+const CIRCLES_OF_CONFUSION: Record<
+  string,
+  {
+    coc: number;
+    sensorHeight: number;
+  }
+> = {
+  Webcam: {
+    coc: 0.002,
+    sensorHeight: 3.6,
+  },
+  Smartphone: {
+    coc: 0.002,
+    sensorHeight: 7.3,
+  },
+  "35mm (full frame)": {
+    coc: 0.029,
+    sensorHeight: 24,
+  },
+  "APS-C": {
+    coc: 0.019,
+    sensorHeight: 15.6,
+  },
+  "Micro Four Thirds": {
+    coc: 0.015,
+    sensorHeight: 13,
+  },
 };
 
-const COMMON_SETUPS = [
+const COMMON_SETUPS: {
+  name: string;
+  focalLength: number;
+  aperture: number;
+  idealDistance: number;
+  sensor: string;
+}[] = [
   {
     name: "Webcam",
     focalLength: 3.6,
     aperture: 2.8,
-    circleOfConfusion: 0.002,
     idealDistance: 36,
+    sensor: "Webcam",
   },
   {
     name: "Smartphone",
     focalLength: 4.3,
-    aperture: 1.8,
-    circleOfConfusion: 0.002,
+    aperture: 2.0,
     idealDistance: 36,
+    sensor: "Smartphone",
   },
   {
-    name: "APS-C 35mm",
+    name: "APS-C - 35mm",
     focalLength: 35,
     aperture: 1.8,
-    circleOfConfusion: 0.019,
     idealDistance: 72,
+    sensor: "APS-C",
   },
   {
     name: "FF - 28mm",
     focalLength: 28,
     aperture: 1.4,
-    circleOfConfusion: 0.029,
     idealDistance: 48,
+    sensor: "35mm (full frame)",
   },
   {
     name: "FF - 35mm",
     focalLength: 35,
     aperture: 1.4,
-    circleOfConfusion: 0.029,
     idealDistance: 60,
+    sensor: "35mm (full frame)",
   },
   {
     name: "FF - 50mm",
     focalLength: 50,
     aperture: 1.8,
-    circleOfConfusion: 0.029,
     idealDistance: 72,
+    sensor: "35mm (full frame)",
   },
   {
     name: "FF - 70mm",
     focalLength: 70,
     aperture: 2.8,
-    circleOfConfusion: 0.029,
     idealDistance: 96,
+    sensor: "35mm (full frame)",
   },
 ];
 
@@ -108,12 +133,13 @@ function App() {
     useState(72);
   const [focalLengthInMillimeters, setFocalLengthInMillimeters] = useState(50);
   const [aperture, setAperture] = useState(1.8);
-  const [circleOfConfusionInMillimeters, setCircleOfConfusionInMillimeters] =
-    useState(0.029);
   const [subject, setSubject] = useState("Human");
   const [system, setSystem] = useState<(typeof SYSTEMS)[number]>("Imperial");
+  const [sensor, setSensor] = useState("35mm (full frame)");
 
   const distanceToSubjectInMM = distanceToSubjectInInches * 25.4;
+
+  const circleOfConfusionInMillimeters = CIRCLES_OF_CONFUSION[sensor].coc;
 
   const hyperFocalDistanceInMM =
     focalLengthInMillimeters +
@@ -142,6 +168,11 @@ function App() {
   if (farFocalPointInInches < nearFocalPointInInches) {
     farFocalPointInInches = farDistanceInInches;
   }
+
+  const sensorHeight = CIRCLES_OF_CONFUSION[sensor].sensorHeight;
+  const verticalFieldOfView =
+    (2 * Math.atan(sensorHeight / 2 / focalLengthInMillimeters) * 180) /
+    Math.PI;
 
   const labelStyles = {
     mt: "2",
@@ -185,6 +216,7 @@ function App() {
           focalLength={focalLengthInMillimeters}
           aperture={aperture}
           system={system}
+          verticalFieldOfView={verticalFieldOfView}
         />
       </Box>
 
@@ -319,14 +351,17 @@ function App() {
               </Box>
               <Box flexGrow={1}>
                 <Select
-                  value={circleOfConfusionInMillimeters}
-                  placeholder="Sensor Size"
-                  onChange={(evt) =>
-                    setCircleOfConfusionInMillimeters(+evt?.target?.value)
-                  }
+                  value={sensor}
+                  placeholder="Sensor"
+                  onChange={(evt) => {
+                    if (!evt?.target?.value) {
+                      return;
+                    }
+                    setSensor(evt?.target?.value);
+                  }}
                 >
-                  {Object.entries(CIRCLES_OF_CONFUSION).map(([key, val]) => (
-                    <option key={key} value={val}>
+                  {Object.entries(CIRCLES_OF_CONFUSION).map(([key]) => (
+                    <option key={key} value={key}>
                       {key}
                     </option>
                   ))}
@@ -363,7 +398,7 @@ function App() {
                 onClick={() => {
                   setFocalLengthInMillimeters(setup.focalLength);
                   setAperture(setup.aperture);
-                  setCircleOfConfusionInMillimeters(setup.circleOfConfusion);
+                  setSensor(setup.sensor);
                   setDistanceToSubjectInInches(setup.idealDistance);
                 }}
               >
