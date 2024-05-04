@@ -93,7 +93,7 @@ function buildViewPath(
   farDistanceInInches: number,
   height: number
 ) {
-  let path = `M${x},${y}`;
+  let path = `M${x},${y - 1}`;
 
   const topRayIntercept = findXAtY(x, y, verticalFieldOfView / 2, 0);
   if (topRayIntercept < farDistanceInInches) {
@@ -122,7 +122,7 @@ function buildViewPath(
     path += ` L${farDistanceInInches},${y + -bottomRayInterceptY}`;
   }
 
-  path += ` Z`;
+  path += ` L${x},${y + 1} Z`;
 
   return path;
 }
@@ -212,13 +212,13 @@ export default function PhotographyGraphic({
         </clipPath>
       </defs>
 
-      <rect
+      {/* <rect
         x={0}
         y={0}
         width={farDistanceInInches}
         height={height}
         fill="#f3f3f3"
-      />
+      /> */}
 
       <path d={viewPath} fill="#ccc" />
 
@@ -298,7 +298,7 @@ export default function PhotographyGraphic({
         {convertUnits(distanceToSubjectInInches, 0)}
       </text>
 
-      <g fill="#999">
+      <g fill="#aaa">
         <g transform={`translate(${distanceToSubjectInInches})`}>
           <SubjectGraphic />
         </g>
