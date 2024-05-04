@@ -70,11 +70,11 @@ function buildViewPath(
   farDistanceInInches: number,
   height: number
 ) {
-  let path = `M ${x} ${y}`;
+  let path = `M${x},${y}`;
 
   const topRayIntercept = findXAtY(x, y, verticalFieldOfView / 2, 0);
   if (topRayIntercept < farDistanceInInches) {
-    path += ` L ${topRayIntercept} 0 L ${farDistanceInInches} 0`;
+    path += ` L${topRayIntercept},0 L${farDistanceInInches},0`;
   } else {
     const topRayInterceptY = findYAtX(
       x,
@@ -82,13 +82,13 @@ function buildViewPath(
       verticalFieldOfView / 2,
       farDistanceInInches
     );
-    path += ` L ${farDistanceInInches} ${y - topRayInterceptY}`;
+    path += ` L${farDistanceInInches},${y - topRayInterceptY}`;
   }
-  path += ` L ${farDistanceInInches} ${y}`;
+  path += ` L${farDistanceInInches},${y}`;
 
   const bottomRayIntercept = findXAtY(x, y, -verticalFieldOfView / 2, height);
   if (bottomRayIntercept < farDistanceInInches) {
-    path += ` L ${farDistanceInInches} ${height} L ${bottomRayIntercept} ${height}`;
+    path += ` L${farDistanceInInches},${height} L${bottomRayIntercept},${height}`;
   } else {
     const bottomRayInterceptY = findYAtX(
       x,
@@ -96,7 +96,7 @@ function buildViewPath(
       -(verticalFieldOfView / 2),
       farDistanceInInches
     );
-    path += ` L ${farDistanceInInches} ${y + -bottomRayInterceptY}`;
+    path += ` L${farDistanceInInches},${y + -bottomRayInterceptY}`;
   }
 
   path += ` Z`;
@@ -178,8 +178,8 @@ export default function PhotographyGraphic({
 }      
 `}
         </style>
-        <clipPath id="forward">
-          <rect x="0" y="0" width={farDistanceInInches} height={72} />
+        <clipPath id="fov">
+          <path d={viewPath} />
         </clipPath>
       </defs>
 
@@ -268,8 +268,15 @@ export default function PhotographyGraphic({
         {convertUnits(distanceToSubjectInInches, 0)}
       </text>
 
-      <g transform={`translate(${distanceToSubjectInInches})`}>
-        <SubjectGraphic />
+      <g fill="#999">
+        <g transform={`translate(${distanceToSubjectInInches})`}>
+          <SubjectGraphic />
+        </g>
+      </g>
+      <g clipPath="url(#fov)">
+        <g transform={`translate(${distanceToSubjectInInches})`}>
+          <SubjectGraphic />
+        </g>
       </g>
 
       <line
