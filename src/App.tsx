@@ -15,14 +15,7 @@ import {
   RadioGroup,
 } from "@chakra-ui/react";
 
-import PhotographyGraphic from "./PhotographyGraphic";
-import {
-  SmallDog,
-  MediumDog,
-  LargeDog,
-  Human,
-  HumanAtDesk,
-} from "./PhotographyGraphic";
+import PhotographyGraphic, { SUBJECTS } from "./PhotographyGraphic";
 
 import Telephoto from "./assets/100-400.png";
 import Fisheye from "./assets/fishey.png";
@@ -114,14 +107,6 @@ const COMMON_SETUPS: {
   },
 ];
 
-const SUBJECTS: Record<string, () => ReturnType<typeof SmallDog>> = {
-  "Small Dog": SmallDog,
-  "Medium Dog": MediumDog,
-  "Large Dog": LargeDog,
-  Human: Human,
-  "Human At Desk": HumanAtDesk,
-};
-
 const SYSTEMS = ["Metric", "Imperial"] as const;
 
 function clamp(value: number, min: number, max: number) {
@@ -212,7 +197,7 @@ function App() {
           nearFocalPointInInches={nearFocalPointInInches}
           farFocalPointInInches={farFocalPointInInches}
           farDistanceInInches={farDistanceInInches}
-          SubjectGraphic={SUBJECTS[subject]}
+          subject={subject}
           focalLength={focalLengthInMillimeters}
           aperture={aperture}
           system={system}
@@ -378,7 +363,11 @@ function App() {
                 <Select
                   value={subject}
                   placeholder="Subject"
-                  onChange={(evt) => setSubject(evt?.target?.value)}
+                  onChange={(evt) => {
+                    if (SUBJECTS[evt?.target?.value as keyof typeof SUBJECTS]) {
+                      setSubject(evt?.target?.value);
+                    }
+                  }}
                 >
                   {Object.entries(SUBJECTS).map(([key]) => (
                     <option key={key} value={key}>
