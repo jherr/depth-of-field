@@ -197,7 +197,7 @@ function App() {
           nearFocalPointInInches={nearFocalPointInInches}
           farFocalPointInInches={farFocalPointInInches}
           farDistanceInInches={farDistanceInInches}
-          subject={subject}
+          subject={subject as keyof typeof SUBJECTS}
           focalLength={focalLengthInMillimeters}
           aperture={aperture}
           system={system}

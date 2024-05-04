@@ -77,7 +77,7 @@ function findXAtY(
 
 function findYAtX(
   x: number,
-  y: number,
+  _y: number,
   angle: number,
   targetX: number
 ): number {
