@@ -271,7 +271,7 @@ function App() {
                 value={focalLengthInMillimeters}
                 onChange={(val: number) => setFocalLengthInMillimeters(val)}
                 min={3}
-                max={400}
+                max={200}
                 step={1}
               >
                 {[14, 28, 35, 50, 70, 85, 100, 135, 155, 200].map((val) => (
@@ -380,10 +380,10 @@ function App() {
           </Flex>
         </Box>
 
-        <Box p={4} pt={6}>
-          <Flex gap={5} justify="center">
+        <Box p={4} pt={6} w="fit" overflow="scroll">
+          <Flex gap={5} w="max" justify="center">
             {COMMON_SETUPS.map((setup) => (
-              <Button
+              <Button 
                 key={setup.name}
                 onClick={() => {
                   setFocalLengthInMillimeters(setup.focalLength);
