@@ -47,6 +47,14 @@ const CIRCLES_OF_CONFUSION: Record<
     coc: 0.015,
     sensorHeight: 13,
   },
+  "6x6 (Medium Format)": {
+    coc: 0.02,
+    sensorHeight: 60,
+  },
+  "6x7 (Medium Format)": {
+    coc: 0.025,
+    sensorHeight: 70,
+  },
 };
 
 const COMMON_SETUPS: {
@@ -104,6 +112,20 @@ const COMMON_SETUPS: {
     aperture: 2.8,
     idealDistance: 96,
     sensor: "35mm (full frame)",
+  },
+  {
+    name: "6x6 - 80mm",
+    focalLength: 80,
+    aperture: 2.8,
+    idealDistance: 90,
+    sensor: "6x6 (Medium Format)",
+  },
+  {
+    name: "6x7 - 80mm",
+    focalLength: 80,
+    aperture: 2.8,
+    idealDistance: 80,
+    sensor: "6x7 (Medium Format)",
   },
 ];
 
