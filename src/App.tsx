@@ -13,7 +13,20 @@ import {
   Radio,
   Stack,
   RadioGroup,
+  Icon,
+  Wrap,
+  WrapItem,
+  Divider,
+  SimpleGrid,
+  Badge,
+  IconButton,
+  useColorMode,
+  useColorModeValue,
+  Tooltip,
 } from "@chakra-ui/react";
+import { TbRuler, TbAperture, TbZoomIn, TbUser } from "react-icons/tb";
+import { FiGithub, FiCamera, FiSun, FiMoon } from "react-icons/fi";
+import { toImperial, toMetric } from "./utils/units";
 
 import PhotographyGraphic, { SUBJECTS } from "./PhotographyGraphic";
 
@@ -25,35 +38,43 @@ const CIRCLES_OF_CONFUSION: Record<
   {
     coc: number;
     sensorHeight: number;
+    cropFactor: number;
   }
 > = {
   Webcam: {
     coc: 0.002,
     sensorHeight: 3.6,
+    cropFactor: 9.6 
   },
   Smartphone: {
     coc: 0.002,
     sensorHeight: 7.3,
+    cropFactor: 6.1
   },
   "35mm (full frame)": {
     coc: 0.029,
     sensorHeight: 24,
+    cropFactor: 1.0
   },
   "APS-C": {
     coc: 0.019,
     sensorHeight: 15.6,
+    cropFactor: 1.52
   },
   "Micro Four Thirds": {
     coc: 0.015,
     sensorHeight: 13,
+    cropFactor: 2.0
   },
   "6x6 (Medium Format)": {
     coc: 0.02,
     sensorHeight: 60,
+    cropFactor: 0.55
   },
   "6x7 (Medium Format)": {
     coc: 0.025,
     sensorHeight: 70,
+    cropFactor: 0.47
   },
 };
 
@@ -144,9 +165,14 @@ function App() {
   const [system, setSystem] = useState<(typeof SYSTEMS)[number]>("Imperial");
   const [sensor, setSensor] = useState("35mm (full frame)");
 
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  const convertUnits = system === "Imperial" ? toImperial : toMetric;
+
   const distanceToSubjectInMM = distanceToSubjectInInches * 25.4;
 
-  const circleOfConfusionInMillimeters = CIRCLES_OF_CONFUSION[sensor].coc;
+  const { coc: circleOfConfusionInMillimeters, cropFactor } =
+    CIRCLES_OF_CONFUSION[sensor];
 
   const hyperFocalDistanceInMM =
     focalLengthInMillimeters +
@@ -181,6 +207,43 @@ function App() {
     (2 * Math.atan(sensorHeight / 2 / focalLengthInMillimeters) * 180) /
     Math.PI;
 
+  // ── Derived photography values
+  const hyperFocalDistanceInInches = hyperFocalDistanceInMM / 25.4;
+  const isInfinityFar =
+    depthOfFieldFarLimitInMM / 25.4 > farDistanceInInches ||
+    depthOfFieldFarLimitInMM <= 0;
+  const totalDofInches = farFocalPointInInches - nearFocalPointInInches;
+  const canSetHyperfocal = hyperFocalDistanceInInches <= farDistanceInInches;
+
+  // 35mm equivalent focal length (only relevant when not on full frame)
+  const equivalentFocalLength = Math.round(
+    focalLengthInMillimeters * cropFactor
+  );
+
+  // Diffraction: airy disk (0.001342 × N mm) should not exceed CoC
+  const diffractionLimitFStop =
+    circleOfConfusionInMillimeters / 0.001342;
+  const hasDiffractionRisk = aperture > diffractionLimitFStop;
+
+  // DoF use-case character based on total depth
+  const totalDofFeet = totalDofInches / 12;
+  const dofCharacter =
+    totalDofFeet < 0.5
+      ? { label: "Macro / Product", color: "purple" }
+      : totalDofFeet < 3
+      ? { label: "Portrait Range", color: "blue" }
+      : totalDofFeet < 10
+      ? { label: "Group / Event", color: "teal" }
+      : totalDofFeet < 30
+      ? { label: "Street / Architecture", color: "green" }
+      : { label: "Landscape", color: "gray" };
+
+  // ── Theme-aware colors 
+  const cardBg = useColorModeValue("white", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const mutedText = useColorModeValue("gray.500", "gray.400");
+  const topBarBg = useColorModeValue("gray.50", "gray.900");
+
   const labelStyles = {
     mt: "2",
     ml: "-2.5",
@@ -198,22 +261,42 @@ function App() {
         }));
     } else {
       const farDistanceInMeters = farDistanceInInches * 0.0254;
-      function convertMetersToInches(meters: number) {
-        return meters * 39.3701;
-      }
+      const convertMetersToInches = (meters: number) => meters * 39.3701;
       return new Array(Math.floor(farDistanceInMeters) + 1)
         .fill(0)
         .map((_val, val) => ({
           value: convertMetersToInches(val + 1),
           label: `${val + 1}m`,
         }));
-      return [];
     }
   }, [system, farDistanceInInches]);
 
   return (
     <>
-      <Box p={2} pt={6}>
+      <Flex
+        bg={topBarBg}
+        justify="flex-end"
+        px={4}
+        py={2}
+        borderBottom="1px"
+        borderColor={borderColor}
+      >
+        <Tooltip
+          label={
+            colorMode === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
+        >
+          <IconButton
+            aria-label="Toggle color mode"
+            icon={colorMode === "dark" ? <FiSun /> : <FiMoon />}
+            size="sm"
+            variant="ghost"
+            onClick={toggleColorMode}
+          />
+        </Tooltip>
+      </Flex>
+
+      <Box p={2} pt={4}>
         <PhotographyGraphic
           distanceToSubjectInInches={distanceToSubjectInInches}
           nearFocalPointInInches={nearFocalPointInInches}
@@ -228,22 +311,105 @@ function App() {
         />
       </Box>
 
-      <Box px={6}>
-        <Box pt={6}>
-          <Flex gap={2}>
-            <Box w="20%">
-              <Text align="right">Units</Text>
+      {/* ── DoF Stats Panel ── */}
+      <Box px={6} pt={2}>
+        <SimpleGrid columns={4} spacing={3}>
+          {[
+            {
+              label: "Near Focus",
+              value: convertUnits(nearFocalPointInInches, 0),
+            },
+            {
+              label: "Far Focus",
+              value: isInfinityFar
+                ? "∞"
+                : convertUnits(farFocalPointInInches, 0),
+            },
+            {
+              label: "Total DoF",
+              value: isInfinityFar ? "∞" : convertUnits(totalDofInches, 0),
+            },
+            {
+              label: "Hyperfocal",
+              value: convertUnits(hyperFocalDistanceInInches, 0),
+            },
+          ].map(({ label, value }) => (
+            <Box
+              key={label}
+              bg={cardBg}
+              rounded="lg"
+              p={3}
+              textAlign="center"
+              border="1px"
+              borderColor={borderColor}
+            >
+              <Text
+                fontSize="xs"
+                color={mutedText}
+                textTransform="uppercase"
+                letterSpacing="wide"
+              >
+                {label}
+              </Text>
+              <Text fontSize="lg" fontWeight="bold" mt={1}>
+                {value}
+              </Text>
             </Box>
+          ))}
+        </SimpleGrid>
 
+        {/* DoF character badge + Set Hyperfocal action */}
+        <Flex justify="space-between" align="center" mt={3}>
+          <Badge
+            colorScheme={dofCharacter.color}
+            px={3}
+            py={1}
+            rounded="full"
+            fontSize="sm"
+          >
+            {dofCharacter.label}
+          </Badge>
+          <Tooltip
+            label={
+              canSetHyperfocal
+                ? "Focus at hyperfocal distance — everything from half this distance to ∞ will be sharp"
+                : `Hyperfocal (${convertUnits(hyperFocalDistanceInInches, 0)}) is beyond the scene range`
+            }
+          >
+            <Button
+              size="xs"
+              variant="outline"
+              colorScheme="teal"
+              isDisabled={!canSetHyperfocal}
+              onClick={() =>
+                setDistanceToSubjectInInches(
+                  Math.round(hyperFocalDistanceInInches)
+                )
+              }
+            >
+              Set Hyperfocal
+            </Button>
+          </Tooltip>
+        </Flex>
+      </Box>
+
+      {/* ── Controls ── */}
+      <Box px={6}>
+        <Box pt={4}>
+          <Flex gap={2} align="center">
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
+              <Icon as={TbRuler} boxSize={4} color={mutedText} />
+              <Text fontSize="sm">Units</Text>
+            </Flex>
             <Box flexGrow={1}>
               <RadioGroup
                 onChange={(v) => setSystem(v as "Imperial" | "Metric")}
                 value={system}
               >
                 <Stack direction="row">
-                  {SYSTEMS.map((system) => (
-                    <Radio value={system} key={system}>
-                      {system}
+                  {SYSTEMS.map((s) => (
+                    <Radio value={s} key={s} colorScheme="blue">
+                      {s}
                     </Radio>
                   ))}
                 </Stack>
@@ -252,16 +418,19 @@ function App() {
           </Flex>
         </Box>
 
+        {/* Subject Distance */}
         <Box pt={6}>
-          <Flex gap={2}>
-            <Box w="20%">
-              <Text align="right">
-                Subject Distance ({system === "Imperial" ? "ft" : "m"})
+          <Flex gap={2} align="center">
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
+              <Icon as={TbRuler} boxSize={4} color={mutedText} />
+              <Text fontSize="sm" textAlign="right">
+                Distance ({system === "Imperial" ? "ft" : "m"})
               </Text>
-            </Box>
+            </Flex>
             <Box flexGrow={1}>
               <Slider
                 aria-label="distance to subject"
+                colorScheme="blue"
                 value={distanceToSubjectInInches}
                 onChange={(val: number) => setDistanceToSubjectInInches(val)}
                 min={10}
@@ -282,14 +451,19 @@ function App() {
           </Flex>
         </Box>
 
+        {/* Focal Length */}
         <Box pt={6}>
-          <Flex gap={2}>
-            <Box w="20%">
-              <Text align="right">Focal Length (mm)</Text>
-            </Box>
+          <Flex gap={2} align="center">
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
+              <Icon as={TbZoomIn} boxSize={4} color={mutedText} />
+              <Text fontSize="sm" textAlign="right">
+                Focal Length (mm)
+              </Text>
+            </Flex>
             <Box flexGrow={1}>
               <Slider
                 aria-label="focal length"
+                colorScheme="blue"
                 value={focalLengthInMillimeters}
                 onChange={(val: number) => setFocalLengthInMillimeters(val)}
                 min={3}
@@ -311,8 +485,13 @@ function App() {
           <Flex gap={2} mt={2}>
             <Box w="20%"></Box>
             <Box flexGrow={1}>
-              <Flex justify="space-between">
-                <img src={Fisheye} alt="Fishey lens" style={{ height: 50 }} />
+              <Flex justify="space-between" align="center">
+                <img src={Fisheye} alt="Fisheye lens" style={{ height: 50 }} />
+                {sensor !== "35mm (full frame)" && (
+                  <Text fontSize="xs" color={mutedText}>
+                    ≈ {equivalentFocalLength}mm full-frame equivalent
+                  </Text>
+                )}
                 <img
                   src={Telephoto}
                   alt="100-400 lens"
@@ -323,14 +502,17 @@ function App() {
           </Flex>
         </Box>
 
+        {/* Aperture */}
         <Box pt={6}>
-          <Flex gap={2}>
-            <Box w="20%">
-              <Text align="right">Aperture</Text>
-            </Box>
+          <Flex gap={2} align="center">
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
+              <Icon as={TbAperture} boxSize={4} color={mutedText} />
+              <Text fontSize="sm">Aperture</Text>
+            </Flex>
             <Box flexGrow={1}>
               <Slider
                 aria-label="aperture"
+                colorScheme="blue"
                 value={aperture}
                 onChange={(val: number) => setAperture(val)}
                 min={0.8}
@@ -349,14 +531,33 @@ function App() {
               </Slider>
             </Box>
           </Flex>
+          {hasDiffractionRisk && (
+            <Flex mt={2} justify="flex-start" pl="calc(20% + 8px)">
+              <Badge
+                colorScheme="orange"
+                variant="subtle"
+                px={2}
+                py={0.5}
+                fontSize="xs"
+                rounded="md"
+              >
+                ⚠ Diffraction may reduce sharpness above f/
+                {diffractionLimitFStop.toFixed(1)} on this sensor
+              </Badge>
+            </Flex>
+          )}
         </Box>
 
+        {/* Sensor + Subject */}
         <Box pt={6}>
           <Flex gap={2}>
             <Flex gap={2} width="50%">
-              <Box w="20%" mt={2}>
-                <Text align="right">Sensor Size</Text>
-              </Box>
+              <Flex w="20%" mt={2} justify="flex-end" align="center" gap={1.5}>
+                <Icon as={FiCamera} boxSize={4} color={mutedText} />
+                <Text fontSize="sm" textAlign="right">
+                  Sensor
+                </Text>
+              </Flex>
               <Box flexGrow={1}>
                 <Select
                   value={sensor}
@@ -378,15 +579,20 @@ function App() {
             </Flex>
 
             <Flex gap={2} width="50%">
-              <Box w="20%" mt={2}>
-                <Text align="right">Subject</Text>
-              </Box>
+              <Flex w="20%" mt={2} justify="flex-end" align="center" gap={1.5}>
+                <Icon as={TbUser} boxSize={4} color={mutedText} />
+                <Text fontSize="sm" textAlign="right">
+                  Subject
+                </Text>
+              </Flex>
               <Box flexGrow={1}>
                 <Select
                   value={subject}
                   placeholder="Subject"
                   onChange={(evt) => {
-                    if (SUBJECTS[evt?.target?.value as keyof typeof SUBJECTS]) {
+                    if (
+                      SUBJECTS[evt?.target?.value as keyof typeof SUBJECTS]
+                    ) {
                       setSubject(evt?.target?.value);
                     }
                   }}
@@ -402,30 +608,57 @@ function App() {
           </Flex>
         </Box>
 
-        <Box p={4} pt={6}>
-          <Flex gap={5} justify="center">
+        <Divider mt={6} borderColor={borderColor} />
+
+        {/* Quick Presets */}
+        <Box pt={4} pb={2}>
+          <Text
+            fontSize="xs"
+            fontWeight="semibold"
+            color={mutedText}
+            textAlign="center"
+            textTransform="uppercase"
+            letterSpacing="wider"
+            mb={3}
+          >
+            Quick Presets
+          </Text>
+          <Wrap justify="center" spacing={2}>
             {COMMON_SETUPS.map((setup) => (
-              <Button
-                key={setup.name}
-                onClick={() => {
-                  setFocalLengthInMillimeters(setup.focalLength);
-                  setAperture(setup.aperture);
-                  setSensor(setup.sensor);
-                  setDistanceToSubjectInInches(setup.idealDistance);
-                }}
-              >
-                {setup.name}
-              </Button>
+              <WrapItem key={setup.name}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="blue"
+                  onClick={() => {
+                    setFocalLengthInMillimeters(setup.focalLength);
+                    setAperture(setup.aperture);
+                    setSensor(setup.sensor);
+                    setDistanceToSubjectInInches(setup.idealDistance);
+                  }}
+                >
+                  {setup.name}
+                </Button>
+              </WrapItem>
             ))}
-          </Flex>
+          </Wrap>
         </Box>
 
-        <Box p={4} pt={6}>
-          <Flex gap={5} justify="center">
-            <a href="https://github.com/jherr/depth-of-field" target="_blank">
-              Contribute to this open source project on GitHub.
-            </a>
-          </Flex>
+        {/* GitHub Footer */}
+        <Box pt={2} pb={6} textAlign="center">
+          <Button
+            as="a"
+            href="https://github.com/jherr/depth-of-field"
+            target="_blank"
+            rel="noreferrer"
+            size="sm"
+            variant="ghost"
+            leftIcon={<Icon as={FiGithub} />}
+            color={mutedText}
+            _hover={{ color: colorMode === "dark" ? "gray.200" : "gray.800" }}
+          >
+            Contribute on GitHub
+          </Button>
         </Box>
       </Box>
     </>
