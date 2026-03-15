@@ -164,6 +164,8 @@ function App() {
   const [subject, setSubject] = useState("Human");
   const [system, setSystem] = useState<(typeof SYSTEMS)[number]>("Imperial");
   const [sensor, setSensor] = useState("35mm (full frame)");
+  const [customSensorWidth, setCustomSensorWidth] = useState(36);
+const [customSensorHeight, setCustomSensorHeight] = useState(24);
 
   const { colorMode, toggleColorMode } = useColorMode();
 
@@ -171,8 +173,14 @@ function App() {
 
   const distanceToSubjectInMM = distanceToSubjectInInches * 25.4;
 
-  const { coc: circleOfConfusionInMillimeters, cropFactor } =
-    CIRCLES_OF_CONFUSION[sensor];
+  const isCustomSensor = sensor === "Custom";
+const customCocCalculated = Math.sqrt(customSensorWidth ** 2 + customSensorHeight ** 2) / 1500;
+const circleOfConfusionInMillimeters = isCustomSensor
+  ? customCocCalculated
+  : CIRCLES_OF_CONFUSION[sensor].coc;
+const cropFactor = isCustomSensor
+  ? 43.27 / Math.sqrt(customSensorWidth ** 2 + customSensorHeight ** 2)
+  : CIRCLES_OF_CONFUSION[sensor].cropFactor;
 
   const hyperFocalDistanceInMM =
     focalLengthInMillimeters +
@@ -202,7 +210,9 @@ function App() {
     farFocalPointInInches = farDistanceInInches;
   }
 
-  const sensorHeight = CIRCLES_OF_CONFUSION[sensor].sensorHeight;
+  const sensorHeight = isCustomSensor
+  ? customSensorHeight
+  : CIRCLES_OF_CONFUSION[sensor].sensorHeight;
   const verticalFieldOfView =
     (2 * Math.atan(sensorHeight / 2 / focalLengthInMillimeters) * 180) /
     Math.PI;
@@ -550,7 +560,28 @@ function App() {
 
         {/* Sensor + Subject */}
         <Box pt={6}>
-          <Flex gap={2}>
+          {isCustomSensor && (
+  <Box mt={2}>
+    <Flex gap={2} align="center" mb={1}>
+      <Text fontSize="xs" w="80px" color={mutedText}>Width (mm)</Text>
+      <input
+        type="number"
+        value={customSensorWidth}
+        onChange={(e) => setCustomSensorWidth(Number(e.target.value))}
+        style={{ width: 70, padding: "2px 6px", borderRadius: 6, border: "1px solid #ccc" }}
+      />
+    </Flex>
+    <Flex gap={2} align="center" mb={1}>
+      <Text fontSize="xs" w="80px" color={mutedText}>Height (mm)</Text>
+      <input
+        type="number"
+        value={customSensorHeight}
+        onChange={(e) => setCustomSensorHeight(Number(e.target.value))}
+        style={{ width: 70, padding: "2px 6px", borderRadius: 6, border: "1px solid #ccc" }}
+      />
+    </Flex>
+  </Box>
+)}<Flex gap={2}>
             <Flex gap={2} width="50%">
               <Flex w="20%" mt={2} justify="flex-end" align="center" gap={1.5}>
                 <Icon as={FiCamera} boxSize={4} color={mutedText} />
@@ -574,6 +605,7 @@ function App() {
                       {key}
                     </option>
                   ))}
+                  <option value="Custom">Custom</option>
                 </Select>
               </Box>
             </Flex>
