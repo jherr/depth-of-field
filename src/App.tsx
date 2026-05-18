@@ -27,6 +27,7 @@ import {
 import { TbRuler, TbAperture, TbZoomIn, TbUser } from "react-icons/tb";
 import { FiGithub, FiCamera, FiSun, FiMoon } from "react-icons/fi";
 import { toImperial, toMetric } from "./utils/units";
+import { buildNativeSelectStyles } from "./selectStyles";
 
 import PhotographyGraphic, { SUBJECTS } from "./PhotographyGraphic";
 
@@ -253,6 +254,8 @@ const cropFactor = isCustomSensor
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const mutedText = useColorModeValue("gray.500", "gray.400");
   const topBarBg = useColorModeValue("gray.50", "gray.900");
+  const graphicTextColor = useColorModeValue("#1A202C", "#F7FAFC");
+  const nativeSelectStyles = buildNativeSelectStyles(colorMode);
 
   const labelStyles = {
     mt: "2",
@@ -317,6 +320,7 @@ const cropFactor = isCustomSensor
           aperture={aperture}
           system={system}
           verticalFieldOfView={verticalFieldOfView}
+          textColor={graphicTextColor}
           onChangeDistance={(val) => setDistanceToSubjectInInches(val)}
         />
       </Box>
@@ -581,9 +585,16 @@ const cropFactor = isCustomSensor
       />
     </Flex>
   </Box>
-)}<Flex gap={2}>
-            <Flex gap={2} width="50%">
-              <Flex w="20%" mt={2} justify="flex-end" align="center" gap={1.5}>
+)}<Flex gap={3} direction={{ base: "column", md: "row" }}>
+            <Flex gap={2} width={{ base: "100%", md: "50%" }}>
+              <Flex
+                w={{ base: "72px", md: "20%" }}
+                mt={2}
+                justify="flex-end"
+                align="center"
+                gap={1.5}
+                flexShrink={0}
+              >
                 <Icon as={FiCamera} boxSize={4} color={mutedText} />
                 <Text fontSize="sm" textAlign="right">
                   Sensor
@@ -591,6 +602,14 @@ const cropFactor = isCustomSensor
               </Flex>
               <Box flexGrow={1}>
                 <Select
+                  bg={nativeSelectStyles.bg}
+                  color={nativeSelectStyles.color}
+                  borderColor={nativeSelectStyles.borderColor}
+                  iconColor={nativeSelectStyles.iconColor}
+                  _hover={nativeSelectStyles._hover}
+                  _focus={nativeSelectStyles._focus}
+                  _active={nativeSelectStyles._active}
+                  sx={nativeSelectStyles.sx}
                   value={sensor}
                   placeholder="Sensor"
                   onChange={(evt) => {
@@ -610,8 +629,15 @@ const cropFactor = isCustomSensor
               </Box>
             </Flex>
 
-            <Flex gap={2} width="50%">
-              <Flex w="20%" mt={2} justify="flex-end" align="center" gap={1.5}>
+            <Flex gap={2} width={{ base: "100%", md: "50%" }}>
+              <Flex
+                w={{ base: "72px", md: "20%" }}
+                mt={2}
+                justify="flex-end"
+                align="center"
+                gap={1.5}
+                flexShrink={0}
+              >
                 <Icon as={TbUser} boxSize={4} color={mutedText} />
                 <Text fontSize="sm" textAlign="right">
                   Subject
@@ -619,6 +645,14 @@ const cropFactor = isCustomSensor
               </Flex>
               <Box flexGrow={1}>
                 <Select
+                  bg={nativeSelectStyles.bg}
+                  color={nativeSelectStyles.color}
+                  borderColor={nativeSelectStyles.borderColor}
+                  iconColor={nativeSelectStyles.iconColor}
+                  _hover={nativeSelectStyles._hover}
+                  _focus={nativeSelectStyles._focus}
+                  _active={nativeSelectStyles._active}
+                  sx={nativeSelectStyles.sx}
                   value={subject}
                   placeholder="Subject"
                   onChange={(evt) => {
