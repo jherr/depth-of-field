@@ -41,6 +41,9 @@ const HumanAtDesk = () => (
   />
 );
 
+// SUBJECTS is shared by App and this component; keeping it here avoids moving
+// the large inline SVG paths into a separate module.
+// eslint-disable-next-line react-refresh/only-export-components
 export const SUBJECTS = {
   Human: {
     graphic: Human,
@@ -137,6 +140,7 @@ export default function PhotographyGraphic({
   aperture,
   system,
   verticalFieldOfView,
+  textColor,
   onChangeDistance,
 }: {
   distanceToSubjectInInches: number;
@@ -147,6 +151,7 @@ export default function PhotographyGraphic({
   aperture: number;
   system: string;
   verticalFieldOfView: number;
+  textColor?: string;
   subject: keyof typeof SUBJECTS;
   onChangeDistance?: (distance: number) => void;
 }) {
@@ -177,6 +182,35 @@ export default function PhotographyGraphic({
 
   const SubjectGraphic = SUBJECTS[subject].graphic;
   const height = SUBJECTS[subject].height;
+  const textFill = textColor ?? "currentColor";
+  const clippedTextFill = "#1A202C";
+  const shouldShowVerticalLabels =
+    farFocalPointInInches - nearFocalPointInInches > 18;
+
+  function renderVerticalDistanceLabels(fill: string) {
+    return (
+      <>
+        <text
+          fill={fill}
+          fontSize={3}
+          textAnchor="start"
+          transform={`translate(${nearFocalPointInInches - 0.5} ${
+            height - 1
+          }) rotate(-90)`}
+        >
+          {convertUnits(nearFocalPointInInches, 0)}
+        </text>
+        <text
+          fill={fill}
+          fontSize={3}
+          textAnchor="start"
+          transform={`translate(${farFocalPointInInches + 0.5} 1) rotate(90)`}
+        >
+          {convertUnits(farFocalPointInInches, 0)}
+        </text>
+      </>
+    );
+  }
 
   const viewPath = buildViewPath(
     0,
@@ -194,7 +228,7 @@ export default function PhotographyGraphic({
       onMouseMove={onMouseMove}
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`-43.5 0 ${farDistanceInInches} ${height + 12}`}
-      style={{ width: "100%", height: "auto" }}
+      style={{ width: "100%", height: "auto", color: textColor }}
     >
       <defs>
         <style>
@@ -260,39 +294,29 @@ export default function PhotographyGraphic({
           (farFocalPointInInches - nearFocalPointInInches) / 2
         }
         y={height + 10.7}
+        fill={textFill}
         fontSize={3}
         textAnchor="middle"
       >
         {convertUnits(farFocalPointInInches - nearFocalPointInInches)}
       </text>
 
-      <text x={-1} y={5} fontSize={4} fontWeight="bold" textAnchor="end">
+      <text
+        x={-1}
+        y={5}
+        fill={textFill}
+        fontSize={4}
+        fontWeight="bold"
+        textAnchor="end"
+      >
         {focalLength}mm f/{aperture}
       </text>
 
-      {farFocalPointInInches - nearFocalPointInInches > 18 && (
-        <>
-          <text
-            fontSize={3}
-            textAnchor="start"
-            transform={`translate(${nearFocalPointInInches - 0.5} ${
-              height - 1
-            }) rotate(-90)`}
-          >
-            {convertUnits(nearFocalPointInInches, 0)}
-          </text>
-          <text
-            fontSize={3}
-            textAnchor="start"
-            transform={`translate(${farFocalPointInInches + 0.5} 1) rotate(90)`}
-          >
-            {convertUnits(farFocalPointInInches, 0)}
-          </text>
-        </>
-      )}
+      {shouldShowVerticalLabels && renderVerticalDistanceLabels(textFill)}
       <text
         x={distanceToSubjectInInches}
         y={height + 3.5}
+        fill={textFill}
         fontSize={3}
         textAnchor="middle"
       >
@@ -309,6 +333,11 @@ export default function PhotographyGraphic({
           <SubjectGraphic />
         </g>
       </g>
+      {shouldShowVerticalLabels && (
+        <g clipPath="url(#fov)">
+          {renderVerticalDistanceLabels(clippedTextFill)}
+        </g>
+      )}
 
       <line
         x1={distanceToSubjectInInches}

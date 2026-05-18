@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "tsx --test src/**/*.test.tsx",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
@@ -27,6 +29,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "playwright": "^1.59.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }
