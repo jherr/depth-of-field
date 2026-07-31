@@ -6,5 +6,10 @@ export const toImperial = (inches: number, precision = 1) => {
 
 export const toMetric = (inches: number, precision = 1) => {
   const cm = inches * 2.54;
-  return `${cm.toFixed(precision)} cm`;
+  const cmRounded = Number(cm.toFixed(precision));
+  if (Math.abs(cmRounded) >= 100) {
+    const meters = cm / 100;
+    return `${meters.toFixed(precision)} m`;
+  }
+  return `${cmRounded.toFixed(precision)} cm`;
 };
