@@ -3,6 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Interactive depth-of-field visualizer and calculator",
+  "license": "MIT",
+  "author": "Jack Herrington",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jherr/depth-of-field.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
