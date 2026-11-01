@@ -727,10 +727,15 @@ const cropFactor = isCustomSensor
         {/* Subject Distance */}
         <Box pt={6}>
           <Flex gap={2} align="center">
-            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
-              <Icon as={TbRuler} boxSize={4} color={mutedText} />
-              <Text fontSize="sm" textAlign="right">
-                {t.distance} ({system === "Imperial" ? "ft" : "m"})
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5} direction="column">
+              <Flex align="center" gap={1.5}>
+                <Icon as={TbRuler} boxSize={4} color={mutedText} />
+                <Text fontSize="sm" textAlign="right">
+                  {t.distance} ({system === "Imperial" ? "ft" : "m"})
+                </Text>
+              </Flex>
+              <Text display={{ base: "block", xl: "none" }} fontSize="xs" color={mutedText}>
+                {convertUnits(distanceToSubjectInInches, 1)}
               </Text>
             </Flex>
             <Box flexGrow={1}>
@@ -760,10 +765,15 @@ const cropFactor = isCustomSensor
         {/* Focal Length */}
         <Box pt={6}>
           <Flex gap={2} align="center">
-            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
-              <Icon as={TbZoomIn} boxSize={4} color={mutedText} />
-              <Text fontSize="sm" textAlign="right">
-                {t.focalLength} (mm)
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5} direction="column">
+              <Flex align="center" gap={1.5}>
+                <Icon as={TbZoomIn} boxSize={4} color={mutedText} />
+                <Text fontSize="sm" textAlign="right">
+                  {t.focalLength} (mm)
+                </Text>
+              </Flex>
+              <Text display={{ base: "block", xl: "none" }} fontSize="xs" color={mutedText}>
+                {Math.round(focalLengthInMillimeters)} mm
               </Text>
             </Flex>
             <Box flexGrow={1}>
@@ -813,9 +823,14 @@ const cropFactor = isCustomSensor
         {/* Aperture */}
         <Box pt={6}>
           <Flex gap={2} align="center">
-            <Flex w="20%" justify="flex-end" align="center" gap={1.5}>
-              <Icon as={TbAperture} boxSize={4} color={mutedText} />
-              <Text fontSize="sm">{t.aperture}</Text>
+            <Flex w="20%" justify="flex-end" align="center" gap={1.5} direction="column">
+              <Flex align="center" gap={1.5}>
+                <Icon as={TbAperture} boxSize={4} color={mutedText} />
+                <Text fontSize="sm">{t.aperture}</Text>
+              </Flex>
+              <Text display={{ base: "block", xl: "none" }} fontSize="xs" color={mutedText}>
+                f/{aperture.toFixed(1)}
+              </Text>
             </Flex>
             <Box flexGrow={1}>
               <Slider
